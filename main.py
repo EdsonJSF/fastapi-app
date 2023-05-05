@@ -40,7 +40,7 @@ def get_movies_by_category(category: str):
 
 
 @app.post('/movies', tags=['movies'])
-def create_movies(
+def create_movie(
         title: str = Body(),
         overview: str = Body(),
         year: int = Body(),
@@ -56,3 +56,25 @@ def create_movies(
         'category': category
     })
     return movies
+
+
+@app.put('/movies/{id}', tags=['movies'])
+def update_movie(
+        id: int,
+        title: str = Body(),
+        overview: str = Body(),
+        year: int = Body(),
+        rating: float = Body(),
+        category: str = Body()
+    ):
+    for movie in movies:
+        if movie['id'] == id:
+            movie['title'] = title
+            movie['overview'] = overview
+            movie['year'] = year
+            movie['rating'] = rating
+            movie['category'] = category
+
+            return movie
+
+    return []
