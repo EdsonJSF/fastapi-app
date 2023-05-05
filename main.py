@@ -28,3 +28,12 @@ def get_movies():
 def get_movie_by_id(id: int):
     movie = list(filter(lambda movie : movie['id'] == id, movies))
     return movie if len(movie) > 0 else []
+
+
+@app.get('/movies/', tags=['movies'])
+def get_movies_by_category(category: str):
+    category = category.strip().lower()
+    movies_by_category = list(
+        filter(lambda movie: movie['category'].lower() == category, movies)
+    )
+    return movies_by_category if len(movies_by_category) > 0 else []
