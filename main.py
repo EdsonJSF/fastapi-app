@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Body
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
+# from typing import Optional
 
 from data.main import movies
 
@@ -9,6 +11,14 @@ app = FastAPI()
 # Documentación del Swagger y de la App
 app.title = "FastAPI App"
 app.version = "0.0.1"
+
+class Movie(BaseModel):
+    # id: Optional[int] = None
+    title: str
+    overview: str
+    year: int
+    rating: float
+    category: str
 
 
 # Endpoints
@@ -40,43 +50,22 @@ def get_movies_by_category(category: str):
 
 
 @app.post('/movies', tags=['movies'])
-def create_movie(
-        title: str = Body(),
-        overview: str = Body(),
-        year: int = Body(),
-        rating: float = Body(),
-        category: str = Body()
-    ):
-    movie = {
-        'id': movies[-1]['id'] + 1,
-        'title': title,
-        'overview': overview,
-        'year': year,
-        'rating':rating,
-        'category': category
-    }
-    movies.append(movie)
-    return movie
+def create_movie(movie: Movie):
+    item = {"id":  movies[-1]['id'] + 1}
+    item.update(movie.dict())
+    movies.append(item)
+    return item
 
 
 @app.put('/movies/{id}', tags=['movies'])
 def update_movie(
         id: int,
-        title: str = Body(),
-        overview: str = Body(),
-        year: int = Body(),
-        rating: float = Body(),
-        category: str = Body()
+        movie: Movie
     ):
-    for movie in movies:
-        if movie['id'] == id:
-            movie['title'] = title
-            movie['overview'] = overview
-            movie['year'] = year
-            movie['rating'] = rating
-            movie['category'] = category
-
-            return movie
+    for item in movies:
+        if item['id'] == id:
+            item.update(movie.dict())
+            return item
 
     return []
 
