@@ -47,15 +47,16 @@ def create_movie(
         rating: float = Body(),
         category: str = Body()
     ):
-    movies.append({
+    movie = {
         'id': movies[-1]['id'] + 1,
         'title': title,
         'overview': overview,
         'year': year,
         'rating':rating,
         'category': category
-    })
-    return movies
+    }
+    movies.append(movie)
+    return movie
 
 
 @app.put('/movies/{id}', tags=['movies'])
