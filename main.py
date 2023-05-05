@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, Path
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 # from typing import Optional
@@ -35,13 +35,13 @@ def get_movies():
 
 
 @app.get('/movies/{id}', tags=['movies'])
-def get_movie_by_id(id: int):
+def get_movie_by_id(id: int = Path(ge=1)):
     movie = list(filter(lambda movie : movie['id'] == id, movies))
     return movie if len(movie) > 0 else []
 
 
 @app.get('/movies/', tags=['movies'])
-def get_movies_by_category(category: str):
+def get_movies_by_category(category: str = Path(max_length=15)):
     category = category.strip().lower()
     movies_by_category = list(
         filter(lambda movie: movie['category'].lower() == category, movies)
@@ -71,7 +71,7 @@ def update_movie(
 
 
 @app.delete('/movies/{id}', tags=['movies'])
-def delete_movie(id: int):
+def delete_movie(id: int = Path(ge=1)):
     for movie in movies:
         if movie['id'] == id:
             movies.remove(movie)
