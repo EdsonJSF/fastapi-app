@@ -2,6 +2,7 @@ from fastapi import FastAPI, Body, Path
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 # from typing import Optional
+from jwt_manager import create_token
 
 from data.main import movies
 
@@ -12,6 +13,7 @@ app = FastAPI()
 app.title = "FastAPI App"
 app.version = "0.0.1"
 
+
 class Movie(BaseModel):
     # id: Optional[int] = None
     title: str = Field(max_length=15)
@@ -19,6 +21,11 @@ class Movie(BaseModel):
     year: int = Field(ge=1800)
     rating: float = Field(ge=0, le=10)
     category: str = Field(max_length=15)
+
+
+class User(BaseModel):
+    email: str
+    password: str
 
 
 # Endpoints
@@ -29,6 +36,11 @@ def message():
     """)
 
 
+@app.post('/auth', tags=['auth'])
+def create_user(user: User):
+    return user
+
+
 @app.get('/movies', tags=['movies'])
 def get_movies():
     return movies
@@ -36,7 +48,7 @@ def get_movies():
 
 @app.get('/movies/{id}', tags=['movies'])
 def get_movie_by_id(id: int = Path(ge=1)):
-    movie = list(filter(lambda movie : movie['id'] == id, movies))
+    movie = list(filter(lambda movie: movie['id'] == id, movies))
     return movie if len(movie) > 0 else []
 
 
@@ -58,10 +70,7 @@ def create_movie(movie: Movie):
 
 
 @app.put('/movies/{id}', tags=['movies'])
-def update_movie(
-        id: int,
-        movie: Movie
-    ):
+def update_movie(id: int, movie: Movie):
     for item in movies:
         if item['id'] == id:
             item.update(movie.dict())
