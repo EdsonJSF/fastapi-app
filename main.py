@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Body, Path
+from fastapi import FastAPI, Path
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 # from typing import Optional
@@ -38,7 +38,9 @@ def message():
 
 @app.post('/auth', tags=['auth'])
 def create_user(user: User):
-    return user
+    if user.email == "string" and "string":
+        token: str = create_token(user.dict())
+    return token
 
 
 @app.get('/movies', tags=['movies'])
