@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Path
+from fastapi import FastAPI, Path, Request, HTTPException, Depends
 from fastapi.responses import HTMLResponse
+from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field
-# from typing import Optional
-from jwt_manager import create_token
 
+from jwt_manager import create_token, validate_token
 from data.main import movies
 
 # Crea la aplicación (una instancia de FastAPI)
@@ -12,6 +12,15 @@ app = FastAPI()
 # Documentación del Swagger y de la App
 app.title = "FastAPI App"
 app.version = "0.0.1"
+
+
+class JWTBearer(HTTPBearer):
+    async def __call__(self, request: Request):
+        auth = await super().__call__(request)
+        data = validate_token(auth.credentials)
+        if data['email'] != "string":
+            raise HTTPException(
+                status_code=403, detail="Credenciales invalidas")
 
 
 class Movie(BaseModel):
@@ -43,7 +52,7 @@ def create_user(user: User):
     return token
 
 
-@app.get('/movies', tags=['movies'])
+@app.get('/movies', tags=['movies'], dependencies=[Depends(JWTBearer())])
 def get_movies():
     return movies
 
