@@ -3,6 +3,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field
 
+from config.database import Base, engine, Session
+from models.movie import Movie
 from jwt_manager import create_token, validate_token
 from data.main import movies
 
@@ -12,6 +14,8 @@ app = FastAPI()
 # Documentación del Swagger y de la App
 app.title = "FastAPI App"
 app.version = "0.0.1"
+
+Base.metadata.create_all(bind=engine)
 
 
 class JWTBearer(HTTPBearer):

@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,windows,linux,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,windows,linux,macos
 
+### SQL ###
+*.sqlite
+
 ### Linux ###
 *~
 
@@ -221,6 +224,8 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
+#!! ERROR: uvicorn is undefined. Use list command to see defined gitignore types !!#
+
 ### Windows ###
 # Windows thumbnail cache files
 Thumbs.db
@@ -247,4 +252,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/python,windows,linux,macos
+# End of https://www.toptal.com/developers/gitignore/api/python,windows,linux,macos,uvicorn
