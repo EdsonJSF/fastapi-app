@@ -3,8 +3,11 @@ from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field
 
+# App components
 from config.database import Base, engine, Session
-from models.movie import Movie
+from models.movie import Movie as MovieModel
+
+# Helpers
 from jwt_manager import create_token, validate_token
 from data.main import movies
 
@@ -78,10 +81,19 @@ def get_movies_by_category(category: str = Path(max_length=15)):
 
 @app.post('/movies', tags=['movies'])
 def create_movie(movie: Movie):
-    item = {"id":  movies[-1]['id'] + 1}
-    item.update(movie.dict())
-    movies.append(item)
-    return item
+    # Iniciamos una sesión
+    db = Session()
+
+    # Descomprimiendo el diccionario de peliculas.
+    new_movie = MovieModel(**movie.dict())
+
+    # Añadir el nuevo registro a la base de datos
+    db.add(new_movie)
+
+    # Actualizar y guardar los cambios.
+    db.commit()
+
+    return movie.dict()
 
 
 @app.put('/movies/{id}', tags=['movies'])
