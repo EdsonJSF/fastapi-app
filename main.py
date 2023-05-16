@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Path, Request, HTTPException, Depends
+from fastapi import FastAPI, Path, Request, HTTPException, Depends, Query
 from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPBearer
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 
 # App components
@@ -61,22 +62,39 @@ def create_user(user: User):
 
 @app.get('/movies', tags=['movies'], dependencies=[Depends(JWTBearer())])
 def get_movies():
-    return movies
+    # Iniciamos una sesión
+    db = Session()
+
+    # Realizamos la consulta
+    result = db.query(MovieModel).all()
+
+    # Retornamos la consulta con jsonable_encoder
+    return jsonable_encoder(result)
 
 
 @app.get('/movies/{id}', tags=['movies'])
 def get_movie_by_id(id: int = Path(ge=1)):
-    movie = list(filter(lambda movie: movie['id'] == id, movies))
-    return movie if len(movie) > 0 else []
+    # Iniciamos una sesión
+    db = Session()
+
+    # Realizamos la consulta para filtrar por id
+    result = db.query(MovieModel).filter(MovieModel.id == id).first()
+
+    # Retornamos la consulta con jsonable_encoder
+    return jsonable_encoder(result)  if result else []
 
 
 @app.get('/movies/', tags=['movies'])
-def get_movies_by_category(category: str = Path(max_length=15)):
+def get_movies_by_category(category: str = Query(max_length=15)):
+    # Iniciamos una sesión
+    db = Session()
+
+    # Realizamos la consulta para filtrar por id
     category = category.strip().lower()
-    movies_by_category = list(
-        filter(lambda movie: movie['category'].lower() == category, movies)
-    )
-    return movies_by_category if len(movies_by_category) > 0 else []
+    result = db.query(MovieModel).filter(MovieModel.category == category).all()
+
+    # Retornamos la consulta con jsonable_encoder
+    return jsonable_encoder(result)  if result else []
 
 
 @app.post('/movies', tags=['movies'])
