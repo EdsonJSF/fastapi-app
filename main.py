@@ -81,7 +81,7 @@ def get_movie_by_id(id: int = Path(ge=1)):
     result = db.query(MovieModel).filter(MovieModel.id == id).first()
 
     # Retornamos la consulta con jsonable_encoder
-    return jsonable_encoder(result)  if result else []
+    return jsonable_encoder(result) if result else []
 
 
 @app.get('/movies/', tags=['movies'])
@@ -94,7 +94,7 @@ def get_movies_by_category(category: str = Query(max_length=15)):
     result = db.query(MovieModel).filter(MovieModel.category == category).all()
 
     # Retornamos la consulta con jsonable_encoder
-    return jsonable_encoder(result)  if result else []
+    return jsonable_encoder(result) if result else []
 
 
 @app.post('/movies', tags=['movies'])
@@ -116,19 +116,43 @@ def create_movie(movie: Movie):
 
 @app.put('/movies/{id}', tags=['movies'])
 def update_movie(id: int, movie: Movie):
-    for item in movies:
-        if item['id'] == id:
-            item.update(movie.dict())
-            return item
+    # Iniciamos una sesión
+    db = Session()
 
-    return []
+    # Comprobar si el registro existe
+    result = db.query(MovieModel).filter(MovieModel.id == id).first()
+
+    if not result:
+        return []
+
+    # Actualiza los campos
+    result.title = movie.title
+    result.overview = movie.overview
+    result.year = movie.year
+    result.rating = movie.rating
+    result.category = movie.category
+
+    # Guardar los cambios.
+    db.commit()
+
+    return jsonable_encoder(result)
 
 
 @app.delete('/movies/{id}', tags=['movies'])
 def delete_movie(id: int = Path(ge=1)):
-    for movie in movies:
-        if movie['id'] == id:
-            movies.remove(movie)
-            return movie
+    # Iniciamos una sesión
+    db = Session()
 
-    return []
+    # Comprobar si el registro existe
+    result = db.query(MovieModel).filter(MovieModel.id == id).first()
+
+    if not result:
+        return []
+
+    # Borrar el registro
+    db.delete(result)
+
+    # Guardar los cambios.
+    db.commit()
+
+    return result
