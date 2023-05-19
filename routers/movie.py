@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from config.database import Session
 from models.movie import Movie as MovieModel
 from middlewares.jwt_bearer import JWTBearer
+from services.movie import MovieService
 
 movie_router = APIRouter()
 
@@ -22,8 +23,8 @@ def get_movies():
     # Iniciamos una sesión
     db = Session()
 
-    # Realizamos la consulta
-    result = db.query(MovieModel).all()
+    # Realizamos la consulta desde el servicio
+    result = MovieService(db).get_movies()
 
     # Retornamos la consulta con jsonable_encoder
     return jsonable_encoder(result)
@@ -35,7 +36,7 @@ def get_movie_by_id(id: int = Path(ge=1)):
     db = Session()
 
     # Realizamos la consulta para filtrar por id
-    result = db.query(MovieModel).filter(MovieModel.id == id).first()
+    result = MovieService(db).get_movie_by_id(id)
 
     # Retornamos la consulta con jsonable_encoder
     return jsonable_encoder(result) if result else []
@@ -46,9 +47,8 @@ def get_movies_by_category(category: str = Query(max_length=15)):
     # Iniciamos una sesión
     db = Session()
 
-    # Realizamos la consulta para filtrar por id
-    category = category.strip().lower()
-    result = db.query(MovieModel).filter(MovieModel.category == category).all()
+    # Realizamos la consulta para filtrar por categoria
+    result = MovieService(db).get_movies_by_category(category)
 
     # Retornamos la consulta con jsonable_encoder
     return jsonable_encoder(result) if result else []
