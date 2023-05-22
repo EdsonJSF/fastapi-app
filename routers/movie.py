@@ -1,21 +1,13 @@
 from fastapi import APIRouter, Path, Depends, Query
 from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel, Field
 
 from config.database import Session
 from models.movie import Movie as MovieModel
 from middlewares.jwt_bearer import JWTBearer
 from services.movie import MovieService
+from schemas.movie import Movie
 
 movie_router = APIRouter()
-
-
-class Movie(BaseModel):
-    title: str = Field(max_length=15)
-    overview: str = Field(min_length=15, max_length=50)
-    year: int = Field(ge=1800)
-    rating: float = Field(ge=0, le=10)
-    category: str = Field(max_length=15)
 
 
 @movie_router.get('/movies', tags=['movies'], dependencies=[Depends(JWTBearer())])
@@ -59,14 +51,7 @@ def create_movie(movie: Movie):
     # Iniciamos una sesión
     db = Session()
 
-    # Descomprimiendo el diccionario de peliculas.
-    new_movie = MovieModel(**movie.dict())
-
-    # Añadir el nuevo registro a la base de datos
-    db.add(new_movie)
-
-    # Actualizar y guardar los cambios.
-    db.commit()
+    MovieService(db).create_movie(movie)
 
     return movie.dict()
 
@@ -76,21 +61,7 @@ def update_movie(id: int, movie: Movie):
     # Iniciamos una sesión
     db = Session()
 
-    # Comprobar si el registro existe
-    result = db.query(MovieModel).filter(MovieModel.id == id).first()
-
-    if not result:
-        return []
-
-    # Actualiza los campos
-    result.title = movie.title
-    result.overview = movie.overview
-    result.year = movie.year
-    result.rating = movie.rating
-    result.category = movie.category
-
-    # Guardar los cambios.
-    db.commit()
+    MovieService(db).update_movie(id, movie)
 
     return jsonable_encoder(movie)
 
@@ -100,16 +71,6 @@ def delete_movie(id: int = Path(ge=1)):
     # Iniciamos una sesión
     db = Session()
 
-    # Comprobar si el registro existe
-    result = db.query(MovieModel).filter(MovieModel.id == id).first()
-
-    if not result:
-        return []
-
-    # Borrar el registro
-    db.delete(result)
-
-    # Guardar los cambios.
-    db.commit()
+    result = MovieService(db).delete_movie(id)
 
     return result
